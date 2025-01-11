@@ -1,4 +1,6 @@
 using JwtAuthDotNet9.Data;
+using JwtAuthDotNet9.Interfaces;
+using JwtAuthDotNet9.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -11,6 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConnString")));
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
