@@ -1,6 +1,7 @@
 ﻿using JwtAuthDotNet9.Dtos;
 using JwtAuthDotNet9.Interfaces;
 using JwtAuthDotNet9.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -32,7 +33,19 @@ namespace JwtAuthDotNet9.Controllers
             if (user is null)
                 return BadRequest("Invalid username or password.");
 
-            return Ok(token);
+            return Ok(token); 
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult AuthenticatedOnlyEndpoint()
+        {
+            return Ok("You are authenticated!");
+        }
+        [Authorize(Roles ="Admin")]
+        [HttpGet("admin-only")]
+        public IActionResult AdminOnlyEndpoint()
+        {
+            return Ok("You are authenticated as Administrator");
         }
     }
 }
