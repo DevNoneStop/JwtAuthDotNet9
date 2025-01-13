@@ -1,4 +1,4 @@
-﻿namespace JwtAuthDotNet9.Dtos
+﻿namespace JwtAuthDotNet9.Dtos.Request
 {
     public class UserDto
     {
