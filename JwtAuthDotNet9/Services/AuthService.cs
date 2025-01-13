@@ -1,22 +1,21 @@
 ﻿using JwtAuthDotNet9.Data;
-using JwtAuthDotNet9.Dtos;
+using JwtAuthDotNet9.Dtos.Request;
+using JwtAuthDotNet9.Dtos.Response;
 using JwtAuthDotNet9.Interfaces;
 using JwtAuthDotNet9.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace JwtAuthDotNet9.Services
 {
     public class AuthService(AppDbContext _context, IConfiguration _configuration) : IAuthService
     {
-        public async Task<string?> LoginAsync(UserDto request)
+        public async Task<TokenResponseDto?> LoginAsync(UserDto request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
             if (user == null)
@@ -28,7 +27,13 @@ namespace JwtAuthDotNet9.Services
             {
                 return null;
             }
-            return CreateToken(user);
+            var response = new TokenResponseDto //create the refresh token on login
+            {
+                AccessToken = CreateToken(user),
+                RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
+            };
+
+            return response;
         }
 
         public async Task<User?> RegisterAsync(UserDto request)
@@ -48,6 +53,23 @@ namespace JwtAuthDotNet9.Services
             await _context.SaveChangesAsync();
             return user;
         }
+        private string GenerateRefreshToken() //Generating refreshToken randomly
+        {
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        private async Task<string> GenerateAndSaveRefreshTokenAsync(User user) //Saving the generated refresh token into the DB under a userprofile
+        {
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+            return refreshToken;
+        }
+
         private string CreateToken(User user)
         {
             var claims = new List<Claim>

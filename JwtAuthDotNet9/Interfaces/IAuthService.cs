@@ -1,4 +1,5 @@
-﻿using JwtAuthDotNet9.Dtos;
+﻿using JwtAuthDotNet9.Dtos.Request;
+using JwtAuthDotNet9.Dtos.Response;
 using JwtAuthDotNet9.Models;
 
 namespace JwtAuthDotNet9.Interfaces
@@ -6,6 +7,6 @@ namespace JwtAuthDotNet9.Interfaces
     public interface IAuthService
     {
         Task<User?> RegisterAsync(UserDto request);
-        Task<string?> LoginAsync(UserDto request);
+        Task<TokenResponseDto?> LoginAsync(UserDto request);
     }
 }
