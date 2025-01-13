@@ -2,7 +2,9 @@
 using JwtAuthDotNet9.Dtos;
 using JwtAuthDotNet9.Interfaces;
 using JwtAuthDotNet9.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -51,7 +53,9 @@ namespace JwtAuthDotNet9.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role)
+
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("AppSettings:Token")!));
