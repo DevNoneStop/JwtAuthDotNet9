@@ -27,12 +27,16 @@ namespace JwtAuthDotNet9.Services
             {
                 return null;
             }
+            return await CreateTokenReponse(user);
+        }
+
+        private async Task<TokenResponseDto> CreateTokenReponse(User? user)
+        {
             var response = new TokenResponseDto //create the refresh token on login
             {
                 AccessToken = CreateToken(user),
                 RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
             };
-
             return response;
         }
 
@@ -61,6 +65,25 @@ namespace JwtAuthDotNet9.Services
             return Convert.ToBase64String(randomNumber);
         }
 
+        private async Task<User?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return null;
+            }
+            return user;
+        }
+        public async Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request)
+        {
+            var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
+            if (user == null)
+                return null;
+
+            return await CreateTokenReponse(user);
+        }
+          
         private async Task<string> GenerateAndSaveRefreshTokenAsync(User user) //Saving the generated refresh token into the DB under a userprofile
         {
             var refreshToken = GenerateRefreshToken();
@@ -94,5 +117,7 @@ namespace JwtAuthDotNet9.Services
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
+
+
     }
 }

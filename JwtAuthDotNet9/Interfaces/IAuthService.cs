@@ -8,5 +8,7 @@ namespace JwtAuthDotNet9.Interfaces
     {
         Task<User?> RegisterAsync(UserDto request);
         Task<TokenResponseDto?> LoginAsync(UserDto request);
+        Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request);
+        
     }
 }
